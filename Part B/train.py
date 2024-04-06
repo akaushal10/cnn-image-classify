@@ -21,9 +21,6 @@ import argparse
 IMG_MODE = 'RGB'
 TRAIN_LABEL = 'train'
 TEST_LABEL = 'test'
-DATASET_PATH = '/kaggle/input/nature-12k/inaturalist_12K/'
-TEST_DATA_PATH = f'{DATASET_PATH}val/'
-TRAIN_DATA_PATH = f'{DATASET_PATH}val/'
 
 # activation function
 RELU_KEY = 'ReLU'
@@ -62,6 +59,22 @@ TEST_LOSS_TITLE = "test_loss"
 
 # Ratio to split train and validation 0.8 means 80% train data and 20% validation data
 TRAIN_DATASET_SPLIT_RATIO = 0.8
+
+parser = argparse.ArgumentParser()
+parser.add_argument("-wp","--wandb_project",help="Project name used to track experiments in Weights & Biases dashboard",default=WANDB_PROJECT_NAME)
+parser.add_argument("-we","--wandb_entity",help="Wandb Entity used to track experiments in the Weights & Biases dashboard.",default=WANDB_ENTITY_NAME)
+parser.add_argument("-dp","--dataset_path",help="Path of folder where dataset located",default="/kaggle/input/nature-12k/inaturalist_12K/")
+parser.add_argument("-e","--epochs",help="Number of epochs to train neural network.",choices=['5','10','15','20','25','30'],default=10)
+parser.add_argument("-b","--batch_size",help="Batch size used to train neural network.",choices=['16','32','64'],default=64)
+parser.add_argument("-lr","--learning_rate",help="Learning rate used to optimize model parameters",choices=['1e-3','1e-4'],default=0.001)
+parser.add_argument("-da","--data_aug",help="Do you want Data Augumenation, 1 means Yes, 0 means No",choices=['1','0'],default=False)
+parser.add_argument("-f","--freeze_k",help="Number of layer want to freeze, -1 if not and < 45",default=-1)
+
+args = parser.parse_args()
+
+DATASET_PATH = args.dataset_path
+TEST_DATA_PATH = f'{DATASET_PATH}val/'
+TRAIN_DATA_PATH = f'{DATASET_PATH}train/'
 
 class DotDict:
     """
@@ -347,17 +360,6 @@ def inception_v3_model(config_defaults = dict({
     return model
 
 
-
-parser = argparse.ArgumentParser()
-parser.add_argument("-wp","--wandb_project",help="Project name used to track experiments in Weights & Biases dashboard",default=WANDB_PROJECT_NAME)
-parser.add_argument("-we","--wandb_entity",help="Wandb Entity used to track experiments in the Weights & Biases dashboard.",default=WANDB_ENTITY_NAME)
-parser.add_argument("-e","--epochs",help="Number of epochs to train neural network.",choices=['5','10','15','20','25','30'],default=10)
-parser.add_argument("-b","--batch_size",help="Batch size used to train neural network.",choices=['16','32','64'],default=64)
-parser.add_argument("-lr","--learning_rate",help="Learning rate used to optimize model parameters",choices=['1e-3','1e-4'],default=0.001)
-parser.add_argument("-da","--data_aug",help="Do you want Data Augumenation, 1 means Yes, 0 means No",choices=['1','0'],default=False)
-parser.add_argument("-f","--freeze_k",help="Number of layer want to freeze, -1 if not and < 45",default=-1)
-
-args = parser.parse_args()
 
 if type(args.learning_rate)==type(''):
     args.learning_rate = float(args.learning_rate)

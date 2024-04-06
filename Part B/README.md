@@ -24,6 +24,7 @@ python train.py --epochs 10 --batch_size 16
 | :---: | :-------------: | :----------- |
 | `-e`, `--epochs` | 5 | Number of epochs to train neural network.[10, 15, 20 , 25 , 30] |
 | `-b`, `--batch_size` | 16 | Batch size used to train neural network, choices: [16,32,64] | 
+| `dp`, `dataset_path` | /kaggle/input/nature-12k/inaturalist_12K/ | Path where your inaturalist_12K dataset store | 
 | `-da`, `--data_aug` | False | choices:  [True, False] | 
 | `-lr`, `--learning_rate` | 0.0001 | Learning rate used to optimize model parameters, choices: [0.001,0.0001,0.0003,0.0005] | 
 | `-fk`, `--freeze_k` | 45 | Number of layers to freeze in the network |

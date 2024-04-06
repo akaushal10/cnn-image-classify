@@ -21,6 +21,7 @@ python train.py --num_filters 32 --filter_size 256 --activation relu --neurons_d
 
 | Name | Default Value | Description |
 | :---: | :-------------: | :----------- |
+| `dp`, `dataset_path` | /kaggle/input/nature-12k/inaturalist_12K/ | Path where your inaturalist_12K dataset store
 | `-e`, `--epochs` | 5 | Number of epochs to train neural network.[10, 15, 20 , 25 , 30] |
 | `-b`, `--batch_size` | 16 | Batch size used to train neural network, choices: [16,32,64] | 
 | `-bn`, `--batch_norm` | True | choices:  [True, False] | 
