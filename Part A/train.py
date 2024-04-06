@@ -280,26 +280,62 @@ class DotDict:
         self.__dict__.update(dictionary)
 
 class iNaturalist(Dataset):
+    """
+    Custom dataset class for iNaturalist dataset.
+
+    Parameters:
+        image_paths (list): List of file paths to images.
+        class_to_idx (dict): Dictionary mapping class names to indices.
+        transform (callable): A function/transform to apply to the images.
+    """
     def __init__(self, image_paths, class_to_idx, transform):
+        """
+        Initialize the dataset with image paths, class mappings, and transformation.
+
+        Args:
+            image_paths (list): List of file paths to images.
+            class_to_idx (dict): Dictionary mapping class names to indices.
+            transform (callable): A function/transform to apply to the images.
+        """
         self.all_images = image_paths
         self.current_transform = transform
         self.class_to_idx = class_to_idx
-
+        
     def __len__(self):
+        """
+        Get the total number of samples in the dataset.
+
+        Returns:
+            int: Total number of samples in the dataset.
+        """
         return len(self.all_images)
 
     def __getitem__(self, idx):
+        """
+        Get a sample from the dataset at the given index.
+
+        Args:
+            idx (int): Index of the sample to retrieve.
+
+        Returns:
+            tuple: A tuple containing the image and its corresponding label.
+        """
+
         image_filepath = self.all_images[idx]
+
+        # Read the image using OpenCV and convert color from BGR to RGB
         image = cv2.imread(image_filepath)
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
+        # Extract the label (class index) from the image file path using class_to_idx mapping
         y = self.class_to_idx[image_filepath.split('/')[-2]]
-
+        
+        # Convert the image array to PIL Image and apply the current transformation
         X = Image.fromarray(np.uint8(image)).convert(IMG_MODE)
-        X = Image.fromarray(image.astype('uint8'), IMG_MODE)
         X = self.current_transform(X)
 
         return X, y
+
 class ConvolutionBlocks(nn.Module):
     """
     A class representing a series of convolutional blocks with optional batch normalization and activation functions.
