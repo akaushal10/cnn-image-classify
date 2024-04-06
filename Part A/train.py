@@ -13,6 +13,7 @@ from torch import  nn,optim
 import torch.nn.functional as F
 from tqdm import tqdm
 import wandb
+import argparse
 
 # constants
 IMG_MODE = 'RGB'
@@ -586,7 +587,56 @@ def train(config_defaults = best_params,isWandb=True):
         return model
 
 # Run With best params
-print("Best parameters : ",best_params)
+
+parser = argparse.ArgumentParser()
+parser.add_argument("-wp","--wandb_project",help="Project name used to track experiments in Weights & Biases dashboard",default=WANDB_PROJECT_NAME)
+parser.add_argument("-we","--wandb_entity",help="Wandb Entity used to track experiments in the Weights & Biases dashboard.",default=WANDB_ENTITY_NAME)
+parser.add_argument("-e","--epochs",help="Number of epochs to train neural network.",choices=['5','10','15','20','25','30'],default=10)
+parser.add_argument("-b","--batch_size",help="Batch size used to train neural network.",choices=['16','32','64'],default=32)
+parser.add_argument("-bn","--batch_norm",help="Do you want Batch Normalization, 1 means Yes, 0 means No",choices=['1','0'],default=True)
+parser.add_argument("-da","--data_aug",help="Do you want Data Augumenation, 1 means Yes, 0 means No",choices=['1','0'],default=False)
+parser.add_argument("-lr","--learning_rate",help="Learning rate used to optimize model parameters",choices=['1e-3','1e-4'],default=1e-3)
+parser.add_argument("-nf","--num_filters",help="choices: ['16', '32', '64', '128']",choices=['16', '32', '64', '128'],default=32)
+parser.add_argument("-fs","--filter_size",help=f"choices: [ '7,5,5,3,3', '11,9,7,5,3']",choices=['7,5,5,3,3', '11,9,7,5,3'],default=[7,5,5,3,3])
+parser.add_argument("-a","--activation",help=f"choices: [{RELU_KEY}, {LEAKY_RELU_KEY}, {GELU_KEY}, {SILU_KEY}, {MISH_KEY}, {ELU_KEY}]",choices=[RELU_KEY, LEAKY_RELU_KEY,GELU_KEY,SILU_KEY,MISH_KEY,ELU_KEY],default=RELU_KEY)
+parser.add_argument("-sz","--neurons_dense",help=f"choices: ['32', '64', '128', '256', '512', '1024']",choices=['32', '64', '128', '256', '512', '1024'],default=512)
+args = parser.parse_args()
+
+best_args = best_params.copy()
+if type(args.learning_rate)==type(''):
+    args.learning_rate = float(args.learning_rate)
+if(type(args.epochs)==type('')):
+    args.epochs = float(args.epochs)
+if(type(args.batch_size)==type('')):
+    args.batch_size = int(args.batch_size)
+if(type(args.batch_norm)==type('')):
+    if args.batch_norm=='0':
+        args.batch_norm = False
+    else:
+        args.batch_norm = True
+if(type(args.data_aug)==type('')):
+    if args.data_aug=='1':
+        args.data_aug = True
+    else:
+        args.data_aug = False
+if(type(args.num_filters)==type('')):
+    args.num_filters = int(args.num_filters)
+if(type(args.filter_size)==type('')):
+    args.filter_size = list(map(int,args.filter_size.split(",")))
+if(type(args.neurons_dense)==type('')):
+    args.neurons_dense = int(args.neurons_dense)
+
+best_args[ACTIVATION_FUNCTION_KEY]=args.activation,
+best_args[BATCH_NORMALIZATION_KEY]=args.batch_norm,
+best_args[BATCH_SIZE_KEY]=args.batch_size,
+best_args[DATA_AUGMENTATION_KEY]=args.data_aug,
+best_args[EPOCHS_KEY]= args.epochs,
+best_args[LEARNING_RATE_KEY]=args.learning_rate,
+best_args[DENSE_LAYER_NEURONS_KEY]=args.neurons_dense,
+best_args[NUMBER_FILTER_KEY]=args.num_filters,
+best_args[SIZE_FILTER_KEY]=args.filter_size
+
+print("Best parameters : ",best_args)
 train()
 
 '''
