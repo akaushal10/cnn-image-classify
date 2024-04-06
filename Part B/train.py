@@ -14,6 +14,7 @@ from torch import nn,optim
 import torch.nn.functional as F
 from tqdm import tqdm 
 import wandb
+import argparse
 
 
 # constants
@@ -49,6 +50,7 @@ LEARNING_RATE_KEY = "learning_rate"
 SIZE_FILTER_KEY = "size_filters"
 DENSE_LAYER_NEURONS_KEY = "neurons_in_dense_layer"
 PRETRAINED_KEY = "pretrained"
+FREEZE_KEY = "freeze"
 
 # wandb plot titles
 TRAIN_ACCURACY_TITLE = "train_acc"
@@ -265,6 +267,7 @@ def inception_v3_model(config_defaults = dict({
         LEARNING_RATE_KEY:0.001,
         DATA_AUGMENTATION_KEY: True,
         PRETRAINED_KEY: True,
+        FREEZE_KEY:-1
     }),isWandb=True):
     """
     Train the neural network model using the specified configurations and hyperparameters.
@@ -293,7 +296,7 @@ def inception_v3_model(config_defaults = dict({
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     model = torchvision.models.inception_v3(pretrained=args[PRETRAINED_KEY], progress=True)
-    freeze_layers(model, -1)
+    freeze_layers(model, args[PRETRAINED_KEY])
     model.AuxLogits.fc = nn.Linear(768, 10,bias=True)
     model.fc = nn.Linear(2048, 10, bias=True)
     model.to(device)
@@ -343,4 +346,41 @@ def inception_v3_model(config_defaults = dict({
         print('\nEpoch ', epoch, TRAIN_ACCURACY_TITLE, train_acc, VALIDATION_ACCURACY_TITLE, val_acc, TEST_ACCURACY_TITLE, test_acc, TRAIN_LOSS_TITLE, train_loss, VALIDATION_LOSS_TITLE, val_loss, TEST_LOSS_TITLE, test_loss) 
     return model
 
-inception_v3_model(isWandb=False)
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument("-wp","--wandb_project",help="Project name used to track experiments in Weights & Biases dashboard",default=WANDB_PROJECT_NAME)
+parser.add_argument("-we","--wandb_entity",help="Wandb Entity used to track experiments in the Weights & Biases dashboard.",default=WANDB_ENTITY_NAME)
+parser.add_argument("-e","--epochs",help="Number of epochs to train neural network.",choices=['5','10','15','20','25','30'],default=10)
+parser.add_argument("-b","--batch_size",help="Batch size used to train neural network.",choices=['16','32','64'],default=64)
+parser.add_argument("-lr","--learning_rate",help="Learning rate used to optimize model parameters",choices=['1e-3','1e-4'],default=0.001)
+parser.add_argument("-da","--data_aug",help="Do you want Data Augumenation, 1 means Yes, 0 means No",choices=['1','0'],default=False)
+parser.add_argument("-f","--freeze_k",help="Number of layer want to freeze, -1 if not and < 45",default=-1)
+
+args = parser.parse_args()
+
+if type(args.learning_rate)==type(''):
+    args.learning_rate = float(args.learning_rate)
+if(type(args.epochs)==type('')):
+    args.epochs = float(args.epochs)
+if(type(args.batch_size)==type('')):
+    args.batch_size = int(args.batch_size)
+if(type(args.freeze_k)==type('')):
+    args.freeze_k = int(args.freeze_k)
+
+if(type(args.data_aug)==type('')):
+    if args.data_aug=='1':
+        args.data_aug = True
+    else:
+        args.data_aug = False
+
+model_configs = dict({
+    EPOCHS_KEY : args.epochs,
+    BATCH_SIZE_KEY: args.batch_size,
+    LEARNING_RATE_KEY:args.learning_rate,
+    DATA_AUGMENTATION_KEY: args.data_aug,
+    PRETRAINED_KEY: True,
+    FREEZE_KEY:args.freeze_k
+})
+
+inception_v3_model(config_defaults=model_configs, isWandb=False)
