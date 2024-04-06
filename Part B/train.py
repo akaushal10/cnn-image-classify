@@ -280,7 +280,7 @@ def inception_v3_model(config_defaults = dict({
         LEARNING_RATE_KEY:0.001,
         DATA_AUGMENTATION_KEY: True,
         PRETRAINED_KEY: True,
-        FREEZE_KEY:-1
+        FREEZE_KEY:45
     }),isWandb=True):
     """
     Train the neural network model using the specified configurations and hyperparameters.
@@ -309,7 +309,7 @@ def inception_v3_model(config_defaults = dict({
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     model = torchvision.models.inception_v3(pretrained=args[PRETRAINED_KEY], progress=True)
-    freeze_layers(model, args[PRETRAINED_KEY])
+    freeze_layers(model, args[FREEZE_KEY])
     model.AuxLogits.fc = nn.Linear(768, 10,bias=True)
     model.fc = nn.Linear(2048, 10, bias=True)
     model.to(device)
@@ -360,7 +360,7 @@ def inception_v3_model(config_defaults = dict({
     return model
 
 
-
+'''
 if type(args.learning_rate)==type(''):
     args.learning_rate = float(args.learning_rate)
 if(type(args.epochs)==type('')):
@@ -384,5 +384,6 @@ model_configs = dict({
     PRETRAINED_KEY: True,
     FREEZE_KEY:args.freeze_k
 })
+'''
 
-inception_v3_model(config_defaults=model_configs, isWandb=False)
+inception_v3_model(isWandb=False)
